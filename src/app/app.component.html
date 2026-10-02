@@ -12,6 +12,7 @@
   <h1>High-Load Seat Booking</h1>
   <h3>The session management of users, and its creation were kept simple as it was out of scope</h3>
   <h3>POST called via unauthenticated users will still be handled via bearer tokens can try out via swagger api</h3>
+  <h3>Currently redis TTL has been set to 15 seconds(Usually should be 10min but for demo kept as 15s), Users will be given a timed window and they have to checkout before that</h3>
 
   <!-- Toast Notification -->
   <div *ngIf="toastMessage" class="toast-notification" [ngClass]="toastType">
@@ -101,7 +102,7 @@
       </div>
       
       <div *ngIf="hasHeldSeats()" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
-        <p>You have seats held for 10 minutes!</p>
+        <p>You have seats held for 15s confirm checkout fast !</p>
         <button class="submit-btn large place-order-btn" (click)="placeOrder()">Place Order</button>
       </div>
     </div>
