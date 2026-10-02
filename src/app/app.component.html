@@ -10,10 +10,9 @@
 
 <div class="container">
   <h1>High-Load Seat Booking</h1>
-  <h3>The session management of users, and its creation were kept simple as it was out of scope</h3>
+  <h3>The session management of users, ability to switch back to already created users does not exist either, creation was kept simple as it was out of scope. But backend validation does exist you can test out via swagger</h3>
   <h3>POST called via unauthenticated users will still be handled via bearer tokens can try out via swagger api</h3>
   <h3>Currently redis TTL has been set to 15 seconds(Usually should be 10min but for demo kept as 15s), Users will be given a timed window and they have to checkout before that</h3>
-
   <!-- Toast Notification -->
   <div *ngIf="toastMessage" class="toast-notification" [ngClass]="toastType">
     {{ toastMessage }}
