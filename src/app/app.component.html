@@ -1,0 +1,109 @@
+<nav class="top-navbar">
+  <div class="nav-brand">Monitoring</div>
+  <div class="nav-links">
+    <a href="http://localhost:8081/" target="_blank">Dozzle Logs</a>
+    <a href="http://localhost:3000/" target="_blank">Grafana</a>
+    <a href="http://localhost:9090/" target="_blank">Prometheus</a>
+    <a href="http://localhost:8080/swagger-ui/index.html" target="_blank">Swagger API</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>High-Load Seat Booking</h1>
+  <h3>The session management of users, and its creation were kept simple as it was out of scope</h3>
+  <h3>POST called via unauthenticated users will still be handled via bearer tokens can try out via swagger api</h3>
+
+  <!-- Toast Notification -->
+  <div *ngIf="toastMessage" class="toast-notification" [ngClass]="toastType">
+    {{ toastMessage }}
+  </div>
+
+  <div class="top-panels">
+    <!-- Admin Panel -->
+    <div class="panel admin-panel">
+      <button class="panel-btn admin-btn" (click)="toggleAdmin()">Admin: Create Show</button>
+      <div *ngIf="showAdminForm" class="panel-form">
+        <input type="text" [(ngModel)]="newShowName" placeholder="Show Name" />
+        <input type="number" [(ngModel)]="newShowPrice" placeholder="Price (INR)" />
+        <input type="number" [(ngModel)]="newShowSeats" placeholder="Total Seats" />
+        <button class="submit-btn" (click)="createShow()">Create</button>
+      </div>
+    </div>
+
+    <!-- User Panel -->
+    <div class="panel user-panel">
+      <div>(Basic user creation without password)</div>
+      <div class="user-info">Logged in as: <strong>{{ currentUserEmail }}</strong></div>
+      <button class="panel-btn user-btn" (click)="toggleUserForm()">Switch User</button>
+      <div *ngIf="showUserForm" class="panel-form">
+        <input type="email" [(ngModel)]="newUserEmail" placeholder="New username" />
+        <button class="submit-btn" (click)="createUser()">Register</button>
+      </div>
+
+      <!-- My Bookings -->
+      <div class="my-bookings" *ngIf="myReservations.length > 0">
+        <h3>My Recent Bookings</h3>
+        <ul>
+          <li *ngFor="let res of myReservations">
+            Seats: {{ res.seats.join(', ') }} (₹{{ res.amount / 100 }})
+            <button class="cancel-btn" (click)="cancelReservation(res.reservationId)">Cancel</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="shows.length === 0">
+    <p>Loading shows or no shows available...</p>
+  </div>
+
+  <div class="shows-list">
+    <button class="show-btn" 
+            *ngFor="let show of shows" 
+            (click)="selectShow(show.showId)">
+      {{ show.name }}
+    </button>
+  </div>
+
+  <div class="seat-map-container" *ngIf="selectedShow">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>{{ selectedShow.name }}</h2>
+      <button class="submit-btn cancel-btn" (click)="runBurstTest()">Run Burst Test (20k)</button>
+    </div>
+    <p>
+      Price: {{ selectedShow.price / 100 | currency:'INR':'symbol':'1.0-0' }} | 
+      Seats: {{ selectedShow.counts.total }} | 
+      Limit: {{ selectedShow.perUserLimit }} per user
+    </p>
+    
+    <div class="screen">SCREEN</div>
+
+    <div class="seat-grid">
+      <div 
+        *ngFor="let seatId of seats"
+        class="seat-box"
+        [ngClass]="{
+          'available': seatMap[seatId] === 'available' && !selectedSeats.has(seatId),
+          'selected': selectedSeats.has(seatId),
+          'taken': seatMap[seatId] === 'confirmed',
+          'held': seatMap[seatId] === 'held'
+        }"
+        (click)="toggleSeat(seatId)">
+        {{ seatId }}
+      </div>
+    </div>
+
+    <div class="booking-footer">
+      <div *ngIf="selectedSeats.size > 0">
+        <p>Selected Seats: <strong>{{ selectedSeatsArray.join(', ') }}</strong></p>
+        <p>Total Amount: <strong>{{ (selectedSeats.size * selectedShow.price) / 100 | currency:'INR':'symbol':'1.0-0' }}</strong></p>
+        <button class="submit-btn large" (click)="proceedToCheckout()">Proceed to Checkout</button>
+      </div>
+      
+      <div *ngIf="hasHeldSeats()" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+        <p>You have seats held for 10 minutes!</p>
+        <button class="submit-btn large place-order-btn" (click)="placeOrder()">Place Order</button>
+      </div>
+    </div>
+  </div>
+</div>
