@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
 
-export const API_BASE_URL = ''; // E.g., 'http://12.34.56.78:8080' for GCP deployment
+export const API_BASE_URL = 'http://34.14.203.181:8080'; // GCP Static IP
 
 @Component({
   selector: 'app-root',
@@ -232,10 +232,19 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Works on HTTP (no secure context needed, unlike crypto.randomUUID)
+  generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
   proceedToCheckout() {
     if (this.selectedSeats.size === 0) return;
 
-    const idempotencyKey = crypto.randomUUID();
+    const idempotencyKey = this.generateUUID();
     const headers = new HttpHeaders({
       'Authorization': 'Bearer ' + this.token
     });
