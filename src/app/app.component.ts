@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
 
+export const API_BASE_URL = ''; // E.g., 'http://12.34.56.78:8080' for GCP deployment
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -55,7 +57,7 @@ export class AppComponent implements OnInit {
        return;
     }
     const email = 'user_' + Math.floor(Math.random() * 1000) + '@example.com';
-    this.http.post<any>('/users/register', { email })
+    this.http.post<any>(API_BASE_URL + '/users/register', { email })
       .subscribe({
         next: (res) => {
           this.token = res.token;
@@ -83,7 +85,7 @@ export class AppComponent implements OnInit {
 
   createUser() {
     if (!this.newUserEmail) return;
-    this.http.post<any>('/users/register', { email: this.newUserEmail })
+    this.http.post<any>(API_BASE_URL + '/users/register', { email: this.newUserEmail })
       .subscribe({
         next: (res) => {
           this.token = res.token;
@@ -105,7 +107,7 @@ export class AppComponent implements OnInit {
   }
 
   fetchShows() {
-    this.http.get<any[]>('/shows').subscribe({
+    this.http.get<any[]>(API_BASE_URL + '/shows').subscribe({
       next: (res) => {
         this.shows = res;
       },
@@ -144,7 +146,7 @@ export class AppComponent implements OnInit {
       perUserLimit: 4
     };
 
-    this.http.post('/shows', payload, { headers }).subscribe({
+    this.http.post(API_BASE_URL + '/shows', payload, { headers }).subscribe({
       next: (res: any) => {
         this.shows.push({ showId: res.showId, name: res.name });
         this.showAdminForm = false;
@@ -164,7 +166,7 @@ export class AppComponent implements OnInit {
     }
     this.selectedSeats.clear();
     
-    this.http.get<any>('/shows/' + showId).subscribe({
+    this.http.get<any>(API_BASE_URL + '/shows/' + showId).subscribe({
       next: (res) => {
         this.selectedShow = res;
         this.seatMap = res.seatMap;
@@ -184,7 +186,7 @@ export class AppComponent implements OnInit {
           const headers = new HttpHeaders({
             'Authorization': 'Bearer ' + this.token
           });
-          this.http.get<any[]>('/shows/' + showId + '/reservations/mine', { headers }).subscribe({
+          this.http.get<any[]>(API_BASE_URL + '/shows/' + showId + '/reservations/mine', { headers }).subscribe({
             next: (reservations) => {
               this.myReservations = reservations;
             },
@@ -197,7 +199,7 @@ export class AppComponent implements OnInit {
   }
 
   connectSSE(showId: string) {
-    this.eventSource = new EventSource('/shows/' + showId + '/stream');
+    this.eventSource = new EventSource(API_BASE_URL + '/shows/' + showId + '/stream');
     this.eventSource.addEventListener('seat_update', (event: any) => {
       this.ngZone.run(() => {
         const data = JSON.parse(event.data);
@@ -240,7 +242,7 @@ export class AppComponent implements OnInit {
 
     const seatsArray = Array.from(this.selectedSeats);
 
-    this.http.post('/shows/' + this.selectedShow.showId + '/reserve', 
+    this.http.post(API_BASE_URL + '/shows/' + this.selectedShow.showId + '/reserve', 
       { 
         seats: seatsArray,
         idempotencyKey: idempotencyKey
@@ -274,7 +276,7 @@ export class AppComponent implements OnInit {
   runBurstTest() {
     if (!this.selectedShow) return;
     this.showToast('Initiating 20,000 requests. This will take a moment...', 'success');
-    this.http.post('/test/burst/' + this.selectedShow.showId + '?count=20000', {}, { responseType: 'text' })
+    this.http.post(API_BASE_URL + '/test/burst/' + this.selectedShow.showId + '?count=20000', {}, { responseType: 'text' })
       .subscribe({
         next: (res) => this.showToast(res, 'success'),
         error: (err) => this.showToast('Failed to initialize burst: ' + err.message, 'error')
@@ -286,7 +288,7 @@ export class AppComponent implements OnInit {
       'Authorization': 'Bearer ' + this.token
     });
 
-    this.http.post('/reservations/' + reservationId + '/cancel', 
+    this.http.post(API_BASE_URL + '/reservations/' + reservationId + '/cancel', 
       {}, 
       { headers }
     ).subscribe({
@@ -323,7 +325,7 @@ export class AppComponent implements OnInit {
     });
 
     heldRes.forEach(res => {
-      this.http.post('/reservations/' + res.reservationId + '/confirm', 
+      this.http.post(API_BASE_URL + '/reservations/' + res.reservationId + '/confirm', 
         {}, 
         { headers }
       ).subscribe({
